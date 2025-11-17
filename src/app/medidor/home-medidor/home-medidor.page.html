@@ -1,0 +1,27 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Mis Lecturas</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+
+  <ion-button expand="block" (click)="nuevaLectura()">
+    Nueva lectura
+  </ion-button>
+
+  <ion-list>
+    <ion-item *ngFor="let l of lecturas">
+      <ion-label>
+        <h2>Medidor: {{ l.medidor_id }}</h2>
+        <p>Valor: {{ l.valor }}</p>
+        <p>{{ l.created_at | date:'short' }}</p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+
+  <ion-button color="danger" expand="block" (click)="logout()">
+    Cerrar sesión
+  </ion-button>
+
+</ion-content>

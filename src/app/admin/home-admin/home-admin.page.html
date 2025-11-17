@@ -1,0 +1,27 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Panel Administrador</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+
+  <h2>Todas las lecturas registradas</h2>
+
+  <ion-list>
+    <ion-item *ngFor="let l of lecturas">
+      <ion-label>
+        <h3>Medidor: {{ l.medidor_id }}</h3>
+        <p>Valor: {{ l.valor }}</p>
+        <p>Observaciones: {{ l.observaciones }}</p>
+        <p>Fecha: {{ l.created_at | date:'short' }}</p>
+        <p>Lat: {{ l.latitud }}, Lng: {{ l.longitud }}</p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+
+  <ion-button expand="block" color="danger" (click)="logout()">
+    CERRAR SESIÓN
+  </ion-button>
+
+</ion-content>

@@ -1,0 +1,45 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Crear Cuenta</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+
+  <ion-list>
+
+    <ion-item>
+      <ion-input
+        label="Nombre completo"
+        labelPlacement="stacked"
+        [(ngModel)]="nombre">
+      </ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-input
+        label="Correo"
+        type="email"
+        labelPlacement="stacked"
+        [(ngModel)]="email">
+      </ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-input
+        label="Contraseña"
+        type="password"
+        labelPlacement="stacked"
+        [(ngModel)]="password">
+      </ion-input>
+    </ion-item>
+
+  </ion-list>
+
+  <ion-button expand="block" (click)="registrar()">
+    Registrarme
+  </ion-button>
+
+  <p style="color:red; margin-top:10px;">{{ errorMsg }}</p>
+
+</ion-content>

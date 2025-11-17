@@ -1,0 +1,58 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Nueva Lectura</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+
+  <ion-list>
+
+    <ion-item>
+      <ion-input
+        label="ID del Medidor"
+        labelPlacement="stacked"
+        [(ngModel)]="medidorId">
+      </ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-input
+        type="number"
+        label="Valor del medidor"
+        labelPlacement="stacked"
+        [(ngModel)]="valor">
+      </ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-input
+        label="Observaciones"
+        labelPlacement="stacked"
+        [(ngModel)]="observaciones">
+      </ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-button expand="block" (click)="tomarFotoMedidor()">
+        Tomar foto del medidor
+      </ion-button>
+    </ion-item>
+
+    <ion-item>
+      <ion-button expand="block" (click)="tomarFotoFachada()">
+        Tomar foto de la fachada
+      </ion-button>
+    </ion-item>
+
+    <ion-item>
+      <ion-button expand="block" color="success" (click)="guardarLectura()">
+        Guardar lectura
+      </ion-button>
+    </ion-item>
+
+  </ion-list>
+
+  <p style="color:red; margin-top:10px;">{{ errorMsg }}</p>
+
+</ion-content>
