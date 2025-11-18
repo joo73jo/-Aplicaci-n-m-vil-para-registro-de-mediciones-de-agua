@@ -60,24 +60,32 @@ export class NuevaLecturaPage {
 
     let lat = 0;
     let lng = 0;
+
     try {
-      const pos = await Geolocation.getCurrentPosition();
+      await Geolocation.requestPermissions();
+
+      const pos = await Geolocation.getCurrentPosition({
+        enableHighAccuracy: true,
+        timeout: 15000
+      });
+
       lat = pos.coords.latitude;
       lng = pos.coords.longitude;
+
     } catch (e) {
-      alert("No se pudo obtener ubicación.");
+      console.error(e);
+      alert("No se pudo obtener ubicación. Activa el GPS y da permisos a la app.");
       return;
     }
 
-    // usuario actual
     const { data: userData } = await this.supa.client.auth.getUser();
     const user = userData.user;
+
     if (!user) {
       alert("Error: usuario no autenticado.");
       return;
     }
 
-    // subir fotos
     const fotoMedidorName = `medidor_${Date.now()}.jpg`;
     const fotoFachadaName = `fachada_${Date.now()}.jpg`;
 
@@ -120,7 +128,6 @@ export class NuevaLecturaPage {
 
     const maps_url = `https://www.google.com/maps?q=${lat},${lng}`;
 
-    // INSERTAR LECTURA
     const { error } = await this.supa.client
       .from("lecturas")
       .insert({
