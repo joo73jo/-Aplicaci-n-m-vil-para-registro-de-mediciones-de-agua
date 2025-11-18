@@ -11,11 +11,34 @@
   <ion-list>
     <ion-item *ngFor="let l of lecturas">
       <ion-label>
-        <h3>Medidor: {{ l.medidor_id }}</h3>
-        <p>Valor: {{ l.valor }}</p>
-        <p>Observaciones: {{ l.observaciones }}</p>
-        <p>Fecha: {{ l.created_at | date:'short' }}</p>
-        <p>Lat: {{ l.latitud }}, Lng: {{ l.longitud }}</p>
+        <h3><b>Medidor:</b> {{ l.medidor_id }}</h3>
+
+        <p><b>Valor:</b> {{ l.valor }}</p>
+
+        <p><b>Observaciones:</b> {{ l.observaciones || '—' }}</p>
+
+        <p><b>Fecha:</b> {{ l.created_at | date:'short' }}</p>
+
+        <p><b>Lat:</b> {{ l.latitud }}, 
+           <b>Lng:</b> {{ l.longitud }}</p>
+
+        <!-- ENLACE A GOOGLE MAPS -->
+        <p>
+          <a [href]="l.maps_url" target="_blank">Ver ubicación en Google Maps</a>
+        </p>
+
+        <!-- FOTO DEL MEDIDOR -->
+        <div *ngIf="l.foto_medidor_url">
+          <p><b>Foto del medidor:</b></p>
+          <img [src]="l.foto_medidor_url" class="preview-img" />
+        </div>
+
+        <!-- FOTO DE FACHADA -->
+        <div *ngIf="l.foto_fachada_url">
+          <p><b>Foto de la fachada:</b></p>
+          <img [src]="l.foto_fachada_url" class="preview-img" />
+        </div>
+
       </ion-label>
     </ion-item>
   </ion-list>

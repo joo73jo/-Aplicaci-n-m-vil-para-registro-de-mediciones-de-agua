@@ -1,11 +1,14 @@
 import { Component } from '@angular/core';
 import {
-  IonContent, IonHeader, IonTitle, IonToolbar,
-  IonList, IonItem, IonLabel, IonButton, IonInput
+  IonHeader, IonToolbar, IonTitle, IonContent,
+  IonList, IonItem, IonButton, IonInput, IonLabel
 } from '@ionic/angular/standalone';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
+import { Geolocation } from '@capacitor/geolocation';
+
 import { SupabaseService } from '../../core/supabase.service';
 
 @Component({
@@ -14,130 +17,132 @@ import { SupabaseService } from '../../core/supabase.service';
   templateUrl: './nueva-lectura.page.html',
   styleUrls: ['./nueva-lectura.page.scss'],
   imports: [
-    CommonModule,
-    FormsModule,
-    IonContent, IonHeader, IonTitle, IonToolbar,
-    IonList, IonItem, IonLabel, IonButton, IonInput
+    IonHeader, IonToolbar, IonTitle, IonContent,
+    IonList, IonItem, IonButton, IonInput, IonLabel,
+    CommonModule, FormsModule
   ]
 })
 export class NuevaLecturaPage {
 
-  medidorId = '';
+  medidor_id = '';
   valor: number | null = null;
   observaciones = '';
-  errorMsg = '';
+  foto_medidor: string | null = null;
+  foto_fachada: string | null = null;
 
-  fotoMedidorFile: File | null = null;
-  fotoFachadaFile: File | null = null;
-
-  latitud: number | null = null;
-  longitud: number | null = null;
-
-  constructor(
-    private supa: SupabaseService,
-    private router: Router
-  ) {}
+  constructor(private supa: SupabaseService) {}
 
   async tomarFotoMedidor() {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.capture = 'environment';
+    const img = await Camera.getPhoto({
+      quality: 70,
+      resultType: CameraResultType.Base64,
+      source: CameraSource.Camera
+    });
 
-    input.onchange = () => {
-      const file = input.files?.[0] || null;
-      this.fotoMedidorFile = file;
-    };
-
-    input.click();
+    this.foto_medidor = `data:image/jpeg;base64,${img.base64String}`;
   }
 
   async tomarFotoFachada() {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.capture = 'environment';
-
-    input.onchange = () => {
-      const file = input.files?.[0] || null;
-      this.fotoFachadaFile = file;
-    };
-
-    input.click();
-  }
-
-  async obtenerUbicacion() {
-    return new Promise<void>((resolve, reject) => {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          this.latitud = pos.coords.latitude;
-          this.longitud = pos.coords.longitude;
-          resolve();
-        },
-        (err) => reject(err),
-        { enableHighAccuracy: true }
-      );
+    const img = await Camera.getPhoto({
+      quality: 70,
+      resultType: CameraResultType.Base64,
+      source: CameraSource.Camera
     });
+
+    this.foto_fachada = `data:image/jpeg;base64,${img.base64String}`;
   }
 
-  async guardarLectura() {
-    this.errorMsg = '';
-
-    if (!this.medidorId || this.valor === null) {
-      this.errorMsg = 'Falta información';
+  async save() {
+    if (!this.foto_medidor || !this.foto_fachada) {
+      alert("Debes tomar las 2 fotos.");
       return;
     }
 
-    // obtener coordenadas
+    let lat = 0;
+    let lng = 0;
     try {
-      await this.obtenerUbicacion();
-    } catch {
-      this.errorMsg = 'No se pudo obtener la ubicación';
+      const pos = await Geolocation.getCurrentPosition();
+      lat = pos.coords.latitude;
+      lng = pos.coords.longitude;
+    } catch (e) {
+      alert("No se pudo obtener ubicación.");
       return;
     }
 
-    const { data: auth } = await this.supa.client.auth.getUser();
-    const user = auth?.user;
+    // usuario actual
+    const { data: userData } = await this.supa.client.auth.getUser();
+    const user = userData.user;
     if (!user) {
-      this.errorMsg = 'Usuario no autenticado';
+      alert("Error: usuario no autenticado.");
       return;
     }
 
     // subir fotos
-    let urlMedidor = null;
-    let urlFachada = null;
+    const fotoMedidorName = `medidor_${Date.now()}.jpg`;
+    const fotoFachadaName = `fachada_${Date.now()}.jpg`;
 
-    if (this.fotoMedidorFile) {
-      const { data } = await this.supa.client.storage
-        .from('lecturas')
-        .upload(`medidor_${Date.now()}.jpg`, this.fotoMedidorFile);
+    const base64ToBlob = (base64: string) => {
+      const byteCharacters = atob(base64.split(',')[1]);
+      const byteNumbers = Array.from(byteCharacters, c => c.charCodeAt(0));
+      return new Blob([new Uint8Array(byteNumbers)], { type: 'image/jpeg' });
+    };
 
-      urlMedidor = data?.path || null;
+    const blob1 = base64ToBlob(this.foto_medidor);
+    const blob2 = base64ToBlob(this.foto_fachada);
+
+    const up1 = await this.supa.client.storage
+      .from("lecturas")
+      .upload(fotoMedidorName, blob1, { contentType: "image/jpeg" });
+
+    if (up1.error) {
+      console.error(up1.error);
+      alert("Error subiendo foto 1.");
+      return;
     }
 
-    if (this.fotoFachadaFile) {
-      const { data } = await this.supa.client.storage
-        .from('lecturas')
-        .upload(`fachada_${Date.now()}.jpg`, this.fotoFachadaFile);
+    const up2 = await this.supa.client.storage
+      .from("lecturas")
+      .upload(fotoFachadaName, blob2, { contentType: "image/jpeg" });
 
-      urlFachada = data?.path || null;
+    if (up2.error) {
+      console.error(up2.error);
+      alert("Error subiendo foto 2.");
+      return;
     }
 
-    const mapsUrl = `https://www.google.com/maps?q=${this.latitud},${this.longitud}`;
+    const url1 = this.supa.client.storage
+      .from("lecturas")
+      .getPublicUrl(fotoMedidorName).data.publicUrl;
 
-    // insertar la lectura
-    await this.supa.client.from('lecturas').insert({
-      medidor_id: this.medidorId,
-      valor: this.valor,
-      observaciones: this.observaciones,
-      latitud: this.latitud,
-      longitud: this.longitud,
-      maps_url: mapsUrl,
-      foto_medidor_url: urlMedidor,
-      foto_fachada_url: urlFachada,
-      usuario_id: user.id
-    });
+    const url2 = this.supa.client.storage
+      .from("lecturas")
+      .getPublicUrl(fotoFachadaName).data.publicUrl;
 
-    this.router.navigate(['/home-medidor']);
+    const maps_url = `https://www.google.com/maps?q=${lat},${lng}`;
+
+    // INSERTAR LECTURA
+    const { error } = await this.supa.client
+      .from("lecturas")
+      .insert({
+        medidor_id: this.medidor_id,
+        valor: this.valor,
+        observaciones: this.observaciones,
+        latitud: lat,
+        longitud: lng,
+        usuario_id: user.id,
+        foto_medidor_url: url1,
+        foto_fachada_url: url2,
+        maps_url: maps_url
+      });
+
+    if (error) {
+      console.error(error);
+      alert("Error inesperado guardando la lectura.");
+      return;
+    }
+
+    alert("Lectura guardada con éxito.");
+    location.href = "/home-medidor";
   }
+
 }

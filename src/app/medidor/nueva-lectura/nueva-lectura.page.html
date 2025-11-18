@@ -9,50 +9,44 @@
   <ion-list>
 
     <ion-item>
-      <ion-input
-        label="ID del Medidor"
-        labelPlacement="stacked"
-        [(ngModel)]="medidorId">
-      </ion-input>
+      <ion-label>ID Medidor</ion-label>
+      <ion-input [(ngModel)]="medidor_id"></ion-input>
     </ion-item>
 
     <ion-item>
-      <ion-input
-        type="number"
-        label="Valor del medidor"
-        labelPlacement="stacked"
-        [(ngModel)]="valor">
-      </ion-input>
+      <ion-label>Valor</ion-label>
+      <ion-input type="number" [(ngModel)]="valor"></ion-input>
     </ion-item>
 
     <ion-item>
-      <ion-input
-        label="Observaciones"
-        labelPlacement="stacked"
-        [(ngModel)]="observaciones">
-      </ion-input>
-    </ion-item>
-
-    <ion-item>
-      <ion-button expand="block" (click)="tomarFotoMedidor()">
-        Tomar foto del medidor
-      </ion-button>
-    </ion-item>
-
-    <ion-item>
-      <ion-button expand="block" (click)="tomarFotoFachada()">
-        Tomar foto de la fachada
-      </ion-button>
-    </ion-item>
-
-    <ion-item>
-      <ion-button expand="block" color="success" (click)="guardarLectura()">
-        Guardar lectura
-      </ion-button>
+      <ion-label>Observaciones</ion-label>
+      <ion-input [(ngModel)]="observaciones"></ion-input>
     </ion-item>
 
   </ion-list>
 
-  <p style="color:red; margin-top:10px;">{{ errorMsg }}</p>
+  <h3>Foto del Medidor</h3>
+  <ion-button expand="block" (click)="tomarFotoMedidor()">Tomar Foto Medidor</ion-button>
+
+  @if (foto_medidor) {
+    <img [src]="foto_medidor" class="preview">
+  }
+
+  <h3>Foto de la Fachada</h3>
+  <ion-button expand="block" (click)="tomarFotoFachada()">Tomar Foto Fachada</ion-button>
+
+  @if (foto_fachada) {
+    <img [src]="foto_fachada" class="preview">
+  }
+
+  <ion-button color="success" expand="block" (click)="save()">Guardar Lectura</ion-button>
 
 </ion-content>
+
+<style>
+.preview {
+  width: 100%;
+  margin-top: 10px;
+  border-radius: 8px;
+}
+</style>
